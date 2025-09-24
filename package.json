@@ -6,17 +6,20 @@
   "scripts": {
     "dev": "tsx watch src/server/cli.ts",
     "start": "node dist/server/cli.js",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/server/cli.js",
     "build": "tsc -p tsconfig.json",
     "test": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
     "commander": "^14.0.1",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "imapflow": "^1.0.197",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.5.2",
     "tsx": "^4.20.5",
