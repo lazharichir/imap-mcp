@@ -36,28 +36,38 @@ export const ReadMessageInputSchema = z.object({
 });
 export type ReadMessageInput = z.infer<typeof ReadMessageInputSchema>;
 
-export type MessageListItem = {
-	uid: number;
-	date: string;
-	from: string[];
-	to: string[];
-	subject: string;
-	snippet: string;
-};
+export const MessageListItemSchema = z
+	.object({
+		uid: z.number().int().nonnegative(),
+		date: z.string(),
+		from: z.array(z.string()),
+		to: z.array(z.string()),
+		subject: z.string(),
+		snippet: z.string(),
+	})
+	.strict();
+export type MessageListItem = z.infer<typeof MessageListItemSchema>;
 
-export type FullMessage = {
-	uid: number;
-	date: string;
-	from: string[];
-	to: string[];
-	cc: string[];
-	subject: string;
-	headers: Record<string, string[]>;
-	text?: string;
-	html?: string;
-	attachments: Array<{
-		filename?: string;
-		contentType?: string;
-		size: number;
-	}>;
-};
+export const FullMessageSchema = z
+	.object({
+		uid: z.number().int().nonnegative(),
+		date: z.string(),
+		from: z.array(z.string()),
+		to: z.array(z.string()),
+		cc: z.array(z.string()),
+		subject: z.string(),
+		headers: z.record(z.array(z.string())),
+		text: z.string().optional(),
+		html: z.string().optional(),
+		attachments: z.array(
+			z
+				.object({
+					filename: z.string().optional(),
+					contentType: z.string().optional(),
+					size: z.number().int().nonnegative(),
+				})
+				.strict(),
+		),
+	})
+	.strict();
+export type FullMessage = z.infer<typeof FullMessageSchema>;

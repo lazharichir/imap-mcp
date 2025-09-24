@@ -6,6 +6,8 @@ import { z } from "zod";
 import { listAccounts, readMessage, searchMessages } from "../imap/index.js";
 import {
 	AccountSchema,
+	FullMessageSchema,
+	MessageListItemSchema,
 	ReadMessageInputSchema,
 	SearchInputSchema,
 } from "../types/index.js";
@@ -44,6 +46,9 @@ export function createMcpServer(config: Config): McpServer {
 			description:
 				"Search INBOX using a portable TEXT query. Returns basic metadata and UIDs.",
 			inputSchema: SearchInputSchema.shape,
+			outputSchema: {
+				results: z.array(MessageListItemSchema),
+			},
 		},
 		async ({ accountName, searchQuery }) => {
 			const account = accounts.find((a) => a.name === accountName);
@@ -68,6 +73,7 @@ export function createMcpServer(config: Config): McpServer {
 			title: "Read message",
 			description: "Fetch full message by UID from INBOX.",
 			inputSchema: ReadMessageInputSchema.shape,
+			outputSchema: FullMessageSchema.shape,
 		},
 		async ({ accountName, id }) => {
 			const account = accounts.find((a) => a.name === accountName);
