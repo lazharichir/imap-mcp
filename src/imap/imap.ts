@@ -10,18 +10,19 @@ async function getClient(a: Account): Promise<ImapFlow> {
 		cached.lastUsed = Date.now();
 		return cached.client;
 	}
+
+	const { imap } = a;
 	const client = new ImapFlow({
-		host: a.host,
-		port: a.port,
-		secure: a.secure,
-		auth: a.auth,
+		host: imap.host,
+		port: imap.port,
+		secure: imap.secure,
+		auth: imap.auth,
 	});
 	await client.connect();
 	pool.set(a.name, { client, lastUsed: Date.now() });
 	return client;
 }
 
-// simple LRU cleanup
 setInterval(() => {
 	const now = Date.now();
 	for (const [k, v] of pool) {
@@ -47,7 +48,6 @@ export async function searchMessages(
 	const c = await getClient(account);
 	await c.mailboxOpen("INBOX");
 
-	// Basic, portable IMAP search: try TEXT match. You can extend to parse query.
 	const uids = await c.search({ body: rawQuery }, { uid: true });
 
 	if (!uids || (Array.isArray(uids) && uids.length === 0)) return [];

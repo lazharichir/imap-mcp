@@ -4,9 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc -p tsconfig.json"
+    "dev": "tsx watch src/server/cli.ts",
+    "start": "node dist/server/cli.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",

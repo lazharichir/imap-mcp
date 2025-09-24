@@ -1,15 +1,24 @@
 import { z } from "zod";
 
-export const AccountSchema = z.object({
-	name: z.string().min(1),
-	host: z.string().min(1),
-	port: z.number().int().positive(),
-	secure: z.boolean().default(true),
-	auth: z.object({
-		user: z.string().min(1),
-		pass: z.string().min(1),
-	}),
-});
+export const ImapCredentialsSchema = z
+	.object({
+		host: z.string().min(1),
+		port: z.number().int().positive(),
+		secure: z.boolean().default(true),
+		auth: z.object({
+			user: z.string().min(1),
+			pass: z.string().min(1),
+		}),
+	})
+	.strict();
+
+export const AccountSchema = z
+	.object({
+		name: z.string().min(1),
+		description: z.string().min(1),
+		imap: ImapCredentialsSchema,
+	})
+	.strict();
 export type Account = z.infer<typeof AccountSchema>;
 
 export const AccountsConfigSchema = z.array(AccountSchema).min(1);
@@ -23,7 +32,7 @@ export type SearchInput = z.infer<typeof SearchInputSchema>;
 
 export const ReadMessageInputSchema = z.object({
 	accountName: z.string().min(1),
-	id: z.number().int().positive(), // UID
+	id: z.number().int().positive(),
 });
 export type ReadMessageInput = z.infer<typeof ReadMessageInputSchema>;
 
