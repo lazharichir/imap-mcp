@@ -1,7 +1,28 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import { AccountsConfigSchema } from "../types/index.js";
+import { AccountSchema } from "../types";
+
+export const AccountsConfigSchema = z
+	.array(AccountSchema)
+	.min(1)
+	.superRefine((accounts, ctx) => {
+		const seenNames = new Map<string, number>();
+		for (const [index, account] of accounts.entries()) {
+			const name = account.name.trim();
+			const existingIndex = seenNames.get(name);
+			if (existingIndex !== undefined) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `Duplicate account name: "${name}"`,
+					path: [index, "name"],
+				});
+			} else {
+				seenNames.set(name, index);
+			}
+		}
+	});
+export type AccountsConfig = z.infer<typeof AccountsConfigSchema>;
 
 const ServerConfigSchema = z
 	.object({

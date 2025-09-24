@@ -108,8 +108,46 @@ describe("loadConfig", () => {
 		await expect(loadConfig(configPath)).rejects.toBeInstanceOf(ConfigError);
 	});
 
+	it("throws ConfigError when duplicate account names exist", async () => {
+		const configPath = await createTempConfig(
+			JSON.stringify(
+				{
+					accounts: [
+						{
+							name: "account-dup",
+							description: "First instance",
+							imap: {
+								host: "imap.example.com",
+								port: 993,
+								secure: true,
+								auth: { user: "user1", pass: "pass1" },
+							},
+						},
+						{
+							name: "account-dup",
+							description: "Second instance",
+							imap: {
+								host: "imap.example.com",
+								port: 993,
+								secure: true,
+								auth: { user: "user2", pass: "pass2" },
+							},
+						},
+					],
+				},
+				null,
+				2,
+			),
+		);
+
+		await expect(loadConfig(configPath)).rejects.toMatchObject({
+			message: expect.stringContaining('Duplicate account name: "account-dup"'),
+		});
+	});
+
 	it("throws ConfigError when file is missing", async () => {
-		await expect(loadConfig("./does-not-exist.json"))
-			.rejects.toBeInstanceOf(ConfigError);
+		await expect(loadConfig("./does-not-exist.json")).rejects.toBeInstanceOf(
+			ConfigError,
+		);
 	});
 });

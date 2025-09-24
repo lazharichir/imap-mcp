@@ -21,9 +21,6 @@ export const AccountSchema = z
 	.strict();
 export type Account = z.infer<typeof AccountSchema>;
 
-export const AccountsConfigSchema = z.array(AccountSchema).min(1);
-export type AccountsConfig = z.infer<typeof AccountsConfigSchema>;
-
 export const SearchInputSchema = z.object({
 	accountName: z.string().min(1),
 	searchQuery: z.string().min(1),
