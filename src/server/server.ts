@@ -8,6 +8,7 @@ import express from "express";
 import { z } from "zod";
 import { listAccounts, readMessage, searchMessages } from "../imap/index.js";
 import {
+	AccountListItemSchema,
 	AccountSchema,
 	FullMessageSchema,
 	MessageListItemSchema,
@@ -36,7 +37,7 @@ export function createMcpServer(config: Config): McpServer {
 			title: "List IMAP accounts",
 			description: "Returns configured account names",
 			inputSchema: {},
-			outputSchema: { accounts: z.array(z.string()) },
+			outputSchema: { accounts: z.array(AccountListItemSchema) },
 		},
 		async () => {
 			const payload = { accounts: await listAccounts(accounts) };

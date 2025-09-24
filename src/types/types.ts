@@ -21,6 +21,13 @@ export const AccountSchema = z
 	.strict();
 export type Account = z.infer<typeof AccountSchema>;
 
+export const AccountListItemSchema = z.object({
+	name: z.string(),
+	description: z.string(),
+	imapUsername: z.string(),
+});
+export type AccountListItem = z.infer<typeof AccountListItemSchema>;
+
 export const SearchInputSchema = z.object({
 	accountName: z.string().min(1),
 	searchQuery: z.string().min(1),

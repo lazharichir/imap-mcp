@@ -1,5 +1,10 @@
 import { ImapFlow, type FetchMessageObject } from "imapflow";
-import type { Account, FullMessage, MessageListItem } from "../types/types.js";
+import type {
+	Account,
+	AccountListItem,
+	FullMessage,
+	MessageListItem,
+} from "../types/types.js";
 
 type ClientEntry = { client: ImapFlow; lastUsed: number };
 const pool = new Map<string, ClientEntry>();
@@ -37,8 +42,14 @@ setInterval(() => {
 	}
 }, 60_000).unref();
 
-export async function listAccounts(accounts: Account[]): Promise<string[]> {
-	return accounts.map((a) => a.name);
+export async function listAccounts(
+	accounts: Account[],
+): Promise<AccountListItem[]> {
+	return accounts.map((a) => ({
+		name: a.name,
+		description: a.description,
+		imapUsername: a.imap.auth.user,
+	}));
 }
 
 export async function searchMessages(
