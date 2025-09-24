@@ -20,6 +20,16 @@ export function createMcpServer(config: Config): McpServer {
 	const accounts = [...config.accounts];
 	const mcp = new McpServer({ name: "imap-mcp-server", version: "0.1.0" });
 
+	const toStructuredResponse = <T>(payload: T) => ({
+		structuredContent: payload,
+		content: [
+			{
+				type: "text" as const,
+				text: JSON.stringify(payload, null, 2),
+			},
+		],
+	});
+
 	mcp.registerTool(
 		"list_accounts",
 		{
@@ -28,18 +38,10 @@ export function createMcpServer(config: Config): McpServer {
 			inputSchema: {},
 			outputSchema: { accounts: z.array(z.string()) },
 		},
-		async () => ({
-			content: [
-				{
-					type: "text",
-					text: JSON.stringify(
-						{ accounts: await listAccounts(accounts) },
-						null,
-						2,
-					),
-				},
-			],
-		}),
+		async () => {
+			const payload = { accounts: await listAccounts(accounts) };
+			return toStructuredResponse(payload);
+		},
 	);
 
 	mcp.registerTool(
@@ -59,14 +61,8 @@ export function createMcpServer(config: Config): McpServer {
 			AccountSchema.parse(account);
 
 			const rows = await searchMessages(account, searchQuery);
-			return {
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify({ results: rows }, null, 2),
-					},
-				],
-			};
+			const payload = { results: rows };
+			return toStructuredResponse(payload);
 		},
 	);
 
@@ -84,14 +80,8 @@ export function createMcpServer(config: Config): McpServer {
 
 			const msg = await readMessage(account, id);
 			if (!msg) throw new Error(`Message not found: UID ${id}`);
-			return {
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify(msg, null, 2),
-					},
-				],
-			};
+			const payload = FullMessageSchema.parse(msg);
+			return toStructuredResponse(payload);
 		},
 	);
 
