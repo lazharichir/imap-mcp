@@ -87,6 +87,25 @@ export const ReadMessageInputSchema = z.object({
 });
 export type ReadMessageInput = z.infer<typeof ReadMessageInputSchema>;
 
+export const LoadMessagesInputSchema = z
+	.object({
+		accountName: z
+			.string()
+			.min(1)
+			.describe("The name of the account to read the messages from"),
+		ids: z
+			.array(
+				z
+					.number()
+					.int()
+					.positive()
+					.describe("A message UID to load"),
+			)
+			.describe("The message UIDs to fetch"),
+	})
+	.strict();
+export type LoadMessagesInput = z.infer<typeof LoadMessagesInputSchema>;
+
 export const MessageListItemSchema = z
 	.object({
 		uid: z
@@ -144,3 +163,12 @@ export const FullMessageSchema = z
 	})
 	.strict();
 export type FullMessage = z.infer<typeof FullMessageSchema>;
+
+export const LoadMessagesOutputSchema = z
+	.object({
+		messages: z
+			.array(FullMessageSchema)
+			.describe("Messages that were found for the requested UIDs"),
+	})
+	.strict();
+export type LoadMessagesOutput = z.infer<typeof LoadMessagesOutputSchema>;

@@ -108,8 +108,65 @@ export async function readMessage(
 
 	const first = await iter.next();
 	if (first.done) return null;
-	const msg = first.value as FetchMessageObject;
+	return toFullMessage(first.value as FetchMessageObject);
+}
 
+export async function readMessages(
+	account: Account,
+	uids: number[],
+): Promise<FullMessage[]> {
+	const uniqueUids = [...new Set(uids)].sort((a, b) => a - b);
+	if (uniqueUids.length === 0) return [];
+
+	const c = await getClient(account);
+	await c.mailboxOpen("INBOX");
+
+	const fetched: FullMessage[] = [];
+	for await (const msg of c.fetch(uniqueUids, {
+		uid: true,
+		envelope: true,
+		headers: true,
+		bodyStructure: true,
+		source: false,
+		bodyParts: ["text", "html"],
+	})) {
+		fetched.push(toFullMessage(msg as FetchMessageObject));
+	}
+
+	return fetched.sort((a, b) => a.uid - b.uid);
+}
+
+function toListItem(msg: FetchMessageObject): MessageListItem {
+	return {
+		uid: msg.uid ?? 0,
+		date: msg.envelope?.date?.toISOString() || "",
+		from: (msg.envelope?.from || []).map((a) => formatAddr(a)),
+		to: (msg.envelope?.to || []).map((a) => formatAddr(a)),
+		subject: msg.envelope?.subject || "",
+		snippet: deriveSnippet(msg),
+	};
+}
+
+function deriveSnippet(msg: FetchMessageObject): string {
+	const t = partText(msg, "text") || "";
+	return t.replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+function partText(
+	msg: FetchMessageObject,
+	kind: "text" | "html",
+): string | undefined {
+	const partKey = [...(msg.bodyParts?.keys() || [])].find((k) =>
+		k.toLowerCase().includes(kind),
+	);
+	if (!partKey) return undefined;
+	const part = msg.bodyParts?.get(partKey);
+	if (!part || (typeof part !== "string" && !Buffer.isBuffer(part)))
+		return undefined;
+	return String(part);
+}
+
+function toFullMessage(msg: FetchMessageObject): FullMessage {
 	const text = partText(msg, "text");
 	const html = partText(msg, "html");
 	const attachments = (msg.bodyStructure?.childNodes || [])
@@ -152,36 +209,6 @@ export async function readMessage(
 		html,
 		attachments,
 	};
-}
-
-function toListItem(msg: FetchMessageObject): MessageListItem {
-	return {
-		uid: msg.uid ?? 0,
-		date: msg.envelope?.date?.toISOString() || "",
-		from: (msg.envelope?.from || []).map((a) => formatAddr(a)),
-		to: (msg.envelope?.to || []).map((a) => formatAddr(a)),
-		subject: msg.envelope?.subject || "",
-		snippet: deriveSnippet(msg),
-	};
-}
-
-function deriveSnippet(msg: FetchMessageObject): string {
-	const t = partText(msg, "text") || "";
-	return t.replace(/\s+/g, " ").trim().slice(0, 160);
-}
-
-function partText(
-	msg: FetchMessageObject,
-	kind: "text" | "html",
-): string | undefined {
-	const partKey = [...(msg.bodyParts?.keys() || [])].find((k) =>
-		k.toLowerCase().includes(kind),
-	);
-	if (!partKey) return undefined;
-	const part = msg.bodyParts?.get(partKey);
-	if (!part || (typeof part !== "string" && !Buffer.isBuffer(part)))
-		return undefined;
-	return String(part);
 }
 
 interface EmailAddress {

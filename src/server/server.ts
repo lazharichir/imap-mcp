@@ -7,12 +7,14 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "node:http";
 import { z } from "zod";
 import type { Config } from "../config/index.js";
-import { listAccounts, readMessage, searchMessages } from "../imap/index.js";
+import { listAccounts, readMessage, readMessages, searchMessages } from "../imap/index.js";
 import {
 	AccountListItemSchema,
 	AccountSchema,
 	FullMessageSchema,
 	MessageListItemSchema,
+	LoadMessagesInputSchema,
+	LoadMessagesOutputSchema,
 	ReadMessageInputSchema,
 	SearchInputSchema,
 } from "../types/index.js";
@@ -82,6 +84,24 @@ export function createMcpServer(config: Config): McpServer {
 			const msg = await readMessage(account, id);
 			if (!msg) throw new Error(`Message not found: UID ${id}`);
 			const payload = FullMessageSchema.parse(msg);
+			return toStructuredResponse(payload);
+		},
+	);
+
+	mcp.registerTool(
+		"load_messages",
+		{
+			title: "Load messages",
+			description: "Fetch multiple messages by UID from INBOX.",
+			inputSchema: LoadMessagesInputSchema.shape,
+			outputSchema: LoadMessagesOutputSchema.shape,
+		},
+		async ({ accountName, ids }) => {
+			const account = accounts.find((a) => a.name === accountName);
+			if (!account) throw new Error(`Unknown account: ${accountName}`);
+
+			const messages = await readMessages(account, ids);
+			const payload = LoadMessagesOutputSchema.parse({ messages });
 			return toStructuredResponse(payload);
 		},
 	);
