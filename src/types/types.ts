@@ -28,9 +28,25 @@ export const AccountListItemSchema = z.object({
 });
 export type AccountListItem = z.infer<typeof AccountListItemSchema>;
 
+export const SearchQuerySchema = z.object({
+	keyword: z.string().optional(),
+	unKeyword: z.string().optional(),
+	since: z.string().optional(),
+	on: z.string().optional(),
+	before: z.string().optional(),
+	subject: z.string().optional(),
+	body: z.string().optional(),
+	bcc: z.string().optional(),
+	cc: z.string().optional(),
+	to: z.string().optional(),
+	from: z.string().optional(),
+});
+export type SearchQuery = z.infer<typeof SearchQuerySchema>;
+
 export const SearchInputSchema = z.object({
 	accountName: z.string().min(1),
-	searchQuery: z.string().min(1),
+	searchQuery: SearchQuerySchema,
+	limit: z.number().int().positive().optional(),
 });
 export type SearchInput = z.infer<typeof SearchInputSchema>;
 

@@ -56,12 +56,12 @@ export function createMcpServer(config: Config): McpServer {
 				results: z.array(MessageListItemSchema),
 			},
 		},
-		async ({ accountName, searchQuery }) => {
+		async ({ accountName, searchQuery, limit }) => {
 			const account = accounts.find((a) => a.name === accountName);
 			if (!account) throw new Error(`Unknown account: ${accountName}`);
 			AccountSchema.parse(account);
 
-			const rows = await searchMessages(account, searchQuery);
+			const rows = await searchMessages(account, searchQuery, limit);
 			const payload = { results: rows };
 			return toStructuredResponse(payload);
 		},
