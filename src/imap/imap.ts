@@ -65,7 +65,15 @@ export async function searchMessages(
 
 	if (!uids || (Array.isArray(uids) && uids.length === 0)) return [];
 
-	let uidArray = Array.isArray(uids) ? uids : [uids];
+	let uidArray: number[];
+	if (Array.isArray(uids)) {
+		uidArray = uids;
+	} else if (typeof uids === "number") {
+		uidArray = [uids];
+	} else {
+		// Defensive: unexpected type, return empty result
+		return [];
+	}
 	if (limit && uidArray.length > limit) {
 		uidArray = uidArray.slice(0, limit);
 	}
