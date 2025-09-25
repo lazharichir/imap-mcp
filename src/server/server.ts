@@ -1,11 +1,12 @@
-import type { Server } from "node:http";
-import { randomUUID } from "node:crypto";
-import cors from "cors";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import cors from "cors";
 import express from "express";
+import { randomUUID } from "node:crypto";
+import type { Server } from "node:http";
 import { z } from "zod";
+import type { Config } from "../config/index.js";
 import { listAccounts, readMessage, searchMessages } from "../imap/index.js";
 import {
 	AccountListItemSchema,
@@ -15,7 +16,6 @@ import {
 	ReadMessageInputSchema,
 	SearchInputSchema,
 } from "../types/index.js";
-import type { Config } from "../config/index.js";
 
 export function createMcpServer(config: Config): McpServer {
 	const accounts = [...config.accounts];

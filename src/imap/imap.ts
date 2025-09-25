@@ -4,6 +4,7 @@ import type {
 	AccountListItem,
 	FullMessage,
 	MessageListItem,
+	SearchQuery,
 } from "../types/types.js";
 
 type ClientEntry = { client: ImapFlow; lastUsed: number };
@@ -54,7 +55,7 @@ export async function listAccounts(
 
 export async function searchMessages(
 	account: Account,
-	searchQuery: Record<string, any>,
+	searchQuery: SearchQuery,
 	limit?: number,
 ): Promise<MessageListItem[]> {
 	const c = await getClient(account);
