@@ -4,6 +4,7 @@ import type {
 	AccountListItem,
 	FullMessage,
 	MessageListItem,
+	SearchQuery,
 } from "../types/types.js";
 
 type ClientEntry = { client: ImapFlow; lastUsed: number };
@@ -54,16 +55,28 @@ export async function listAccounts(
 
 export async function searchMessages(
 	account: Account,
-	rawQuery: string,
+	searchQuery: SearchQuery,
+	limit?: number,
 ): Promise<MessageListItem[]> {
 	const c = await getClient(account);
 	await c.mailboxOpen("INBOX");
 
-	const uids = await c.search({ body: rawQuery }, { uid: true });
+	const uids = await c.search(searchQuery, { uid: true });
 
 	if (!uids || (Array.isArray(uids) && uids.length === 0)) return [];
 
-	const uidArray = Array.isArray(uids) ? uids : [];
+	let uidArray: number[];
+	if (Array.isArray(uids)) {
+		uidArray = uids;
+	} else if (typeof uids === "number") {
+		uidArray = [uids];
+	} else {
+		// Defensive: unexpected type, return empty result
+		return [];
+	}
+	if (limit && uidArray.length > limit) {
+		uidArray = uidArray.slice(0, limit);
+	}
 	const rows: MessageListItem[] = [];
 	for await (const msg of c.fetch(uidArray, {
 		uid: true,
